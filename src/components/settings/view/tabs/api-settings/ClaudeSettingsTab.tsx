@@ -22,10 +22,10 @@ export default function ClaudeSettingsTab() {
             const response = await api.providerSettings.getClaude();
             if (response.ok) {
                 const data = await response.json();
-                // Since we don't return the values for security in GET normally, but here we might want to show them?
-                // Actually our backend route implementation returns baseUrl.name/apiKey.name.
-                // I should have returned the actual values if I want them editable.
-                // Let's fix the backend later if needed. For now assume we fetch.
+                if (data.baseUrl?.value) {
+                    setBaseUrl(data.baseUrl.value);
+                }
+                // API key is not returned for security reasons
             }
         } catch (error) {
             console.error('Failed to fetch Claude settings:', error);
@@ -33,6 +33,7 @@ export default function ClaudeSettingsTab() {
             setLoading(false);
         }
     };
+
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();

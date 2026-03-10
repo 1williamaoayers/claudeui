@@ -10,16 +10,16 @@ const __dirname = dirname(__filename);
 
 // ANSI color codes for terminal output
 const colors = {
-    reset: '\x1b[0m',
-    bright: '\x1b[1m',
-    cyan: '\x1b[36m',
-    dim: '\x1b[2m',
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  cyan: '\x1b[36m',
+  dim: '\x1b[2m',
 };
 
 const c = {
-    info: (text) => `${colors.cyan}${text}${colors.reset}`,
-    bright: (text) => `${colors.bright}${text}${colors.reset}`,
-    dim: (text) => `${colors.dim}${text}${colors.reset}`,
+  info: (text) => `${colors.cyan}${text}${colors.reset}`,
+  bright: (text) => `${colors.bright}${text}${colors.reset}`,
+  dim: (text) => `${colors.dim}${text}${colors.reset}`,
 };
 
 // Use DATABASE_PATH environment variable if set, otherwise use default location
@@ -310,7 +310,7 @@ const credentialsDb = {
   // Get all credentials for a user, optionally filtered by type
   getCredentials: (userId, credentialType = null) => {
     try {
-      let query = 'SELECT id, credential_name, credential_type, description, created_at, is_active FROM user_credentials WHERE user_id = ?';
+      let query = 'SELECT id, credential_name, credential_type, credential_value, description, created_at, is_active FROM user_credentials WHERE user_id = ?';
       const params = [userId];
 
       if (credentialType) {

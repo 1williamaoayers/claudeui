@@ -16,7 +16,7 @@ router.get('/claude', async (req, res) => {
             creds.find(c => c.credential_name === 'api_key') : null;
 
         res.json({
-            baseUrl: baseUrl ? { id: baseUrl.id, name: baseUrl.credential_name, active: true } : null,
+            baseUrl: baseUrl ? { id: baseUrl.id, name: baseUrl.credential_name, value: baseUrl.credential_value, active: true } : null,
             apiKey: apiKey ? { id: apiKey.id, name: apiKey.credential_name, active: true } : null
         });
     } catch (error) {
