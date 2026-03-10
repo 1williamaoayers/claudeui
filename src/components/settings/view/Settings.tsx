@@ -10,6 +10,7 @@ import AppearanceSettingsTab from '../view/tabs/AppearanceSettingsTab';
 import CredentialsSettingsTab from '../view/tabs/api-settings/CredentialsSettingsTab';
 import GitSettingsTab from '../view/tabs/git-settings/GitSettingsTab';
 import TasksSettingsTab from '../view/tabs/tasks-settings/TasksSettingsTab';
+import ClaudeSettingsTab from '../view/tabs/api-settings/ClaudeSettingsTab';
 import { useSettingsController } from '../hooks/useSettingsController';
 import type { SettingsProps } from '../types/types';
 
@@ -163,6 +164,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
             {activeTab === 'api' && (
               <div className="space-y-6 md:space-y-8">
                 <CredentialsSettingsTab />
+              </div>
+            )}
+
+            {activeTab === 'claude' && (
+              <div className="space-y-6 md:space-y-8">
+                <ClaudeSettingsTab />
               </div>
             )}
           </div>

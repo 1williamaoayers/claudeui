@@ -2,14 +2,14 @@ import { spawn } from 'child_process';
 import crossSpawn from 'cross-spawn';
 import { promises as fs } from 'fs';
 import path from 'path';
-import os from 'os';
+import { credentialsDb } from './database/db.js';
 
 // Use cross-spawn on Windows for better command execution
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
 
 let activeClaudeProcesses = new Map(); // Track active processes by session ID
 
-async function queryClaudeCLI(command, options = {}, ws) {
+async function queryClaudeCLI(command, options = {}, ws, user) {
     return new Promise(async (resolve, reject) => {
         const { sessionId, projectPath, cwd, model, toolsSettings, skipPermissions } = options;
         let capturedSessionId = sessionId;
@@ -33,6 +33,29 @@ async function queryClaudeCLI(command, options = {}, ws) {
 
         // Set up environment inheriting everything
         const env = { ...process.env };
+
+        // [CUSTOM] Inject dynamic configuration from database if available
+        if (user && user.id) {
+            const PROVIDER_TYPE = 'claude_proxy_config';
+            const dbBaseUrl = credentialsDb.getActiveCredential(user.id, PROVIDER_TYPE);
+            // Note: getActiveCredential returns the single most recent active value. 
+            // In our route we save both base_url and api_key as separate entries in credentialsDb?
+            // Wait, I need to fetch them by name. 
+            // Let's refine the DB fetch logic to be more specific.
+
+            const creds = credentialsDb.getCredentials(user.id, PROVIDER_TYPE);
+            const baseUrl = creds.find(c => c.credential_name === 'base_url' && c.is_active)?.credential_value;
+            const apiKey = creds.find(c => c.credential_name === 'api_key' && c.is_active)?.credential_value;
+
+            if (baseUrl) {
+                console.log(`[DYNAMIC] Overriding ANTHROPIC_BASE_URL: ${baseUrl}`);
+                env.ANTHROPIC_BASE_URL = baseUrl;
+            }
+            if (apiKey) {
+                console.log(`[DYNAMIC] Overriding ANTHROPIC_AUTH_TOKEN: (active)`);
+                env.ANTHROPIC_AUTH_TOKEN = apiKey;
+            }
+        }
 
         const claudeProcess = spawnFunction('claude', args, {
             cwd: workingDir,

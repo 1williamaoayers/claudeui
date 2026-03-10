@@ -223,6 +223,15 @@ export const api = {
       }),
   },
 
+  // Provider settings
+  providerSettings: {
+    getClaude: () => authenticatedFetch('/api/provider-settings/claude'),
+    saveClaude: (config) => authenticatedFetch('/api/provider-settings/claude', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    }),
+  },
+
   // Generic GET method for any endpoint
   get: (endpoint) => authenticatedFetch(`/api${endpoint}`),
 
