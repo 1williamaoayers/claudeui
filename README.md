@@ -28,53 +28,66 @@
 
 ---
 
-## 🎮 如何使用
+## � 给其他人的通用安装指南 (General Setup)
 
-1. **打开网页**：浏览器访问 `http://你的IP:3001`
-2. **选择模型**：在左下角模型列表中，我已经为您添加了 `Sonnet 4.6 (Kiro)` 等专属选项。
-3. **管理项目**：点击 **Projects** -> **Create New Project**，你可以直接输入 `/` 或者 `/anti/phone`。
-   *   **注意**：我已经解除了 UI 对系统根目录的封锁，你可以管理全盘文件。
+如果你不是本项目的所有者，想在自己的机器上运行，请遵循以下步骤：
 
----
+### 1. 前提条件 (Prerequisites)
+*   **Node.js**: v18 或更高版本。
+*   **Claude Code CLI**: 必须先安装官方 CLI 并确保它能运行。
+    ```bash
+    npm install -g @anthropic-ai/claude-code
+    # 确保执行这步能看到回复：
+    claude "hello"
+    ```
 
-## ⚠️ 避坑指南（必看）
-
-1.  **为什么还是 Thinking？**：
-    *   检查终端输入 `claude "hello"` 是否有反应。
-    *   如果终端有反应但 UI 没反应，尝试刷新网页或清除浏览器缓存。
-2.  **权限报错**：
-    *   虽然 UI 放开了根目录权限，但底层的 Node.js 进程仍受系统 Linux 用户权限限制。建议以 `root` 或具备相应读写权限的用户运行服务。
-3.  **不要乱加参数**：
-    *   在 `server/claude-cli-bridge.js` 中不要随意添加 `claude` 命令不支持的参数（如 `--print-config`），否则进程会报错退出。
-
----
-
-## 🧹 如何彻底删除
-
-如果你不想用了，按以下步骤清理：
-
-1. **停止并禁用服务**：
+### 2. 快速起步 (Getting Started)
+1. **克隆仓库**：
    ```bash
-   systemctl stop claudecodeui
+   git clone https://github.com/1williamaoayers/claudeui.git
+   cd claudeui
    ```
-2. **删除服务文件**：
+2. **安装依赖**：
    ```bash
-   rm /etc/systemd/system/claudecodeui.service
-   systemctl daemon-reload
+   npm install
    ```
-3. **删除代码目录**：
+3. **配置环境变量**：创建 `.env` 文件。
    ```bash
-   rm -rf /anti/claudeui
+   # 必填：你的 API 代理地址和 Key
+   ANTHROPIC_BASE_URL=https://api.yourproxy.com
+   ANTHROPIC_AUTH_TOKEN=sk-your-key
+   
+   # 可选：UI 允许访问的起始目录（默认是用户家目录）
+   WORKSPACES_ROOT=/
+   ```
+4. **编译并启动**：
+   ```bash
+   npm run build
+   npm start
    ```
 
 ---
 
-## 📂 核心定制说明
+## 📂 核心定制说明 (Technical Details)
 
-*   **驱动文件**：`server/claude-cli-bridge.js`（网页对接终端的核心）。
-*   **权限文件**：`server/routes/projects.js`（放开 / 根目录访问）。
-*   **模型文件**：`shared/modelConstants.js`（自定义模型下拉菜单）。
+*   **驱动文件**：`server/claude-cli-bridge.js`（核心逻辑：通过 `spawn('claude')` 桥接，解决所有非标 API 协议问题）。
+*   **权限放开**：修改了 `server/routes/projects.js`，允许直接作为 `WORKSPACES_ROOT` 访问根目录 `/`。
+*   **模型扩展**：在 `shared/modelConstants.js` 中添加了自定义后端常用的模型 ID。
 
 ---
-**项目地址**: [1williamaoayers/claudeui](https://github.com/1williamaoayers/claudeui)
-**复盘记录**: [Claude-Code-UI技术复盘.md](file:///anti/linkopenclaw/Claude-Code-UI技术复盘.md)
+
+## ⚠️ 避坑指南 (Common Pitfalls)
+
+1.  **Thinking 挂起**：请第一时间确认你的终端 `claude` 命令是否正常。本 UI 原理是“终端的网页版马甲”。
+2.  **权限限制**：如果网页无法创建项目，请检查运行 `node` 的用户是否有该目录的写入权限。
+3.  **ANSI 乱码**：本驱动自带 ANSI 过滤，会自动清洗终端的颜色转义字符。
+
+---
+
+## 🧹 如何彻底删除 (Uninstall)
+
+1. **停止服务**：`systemctl stop claudecodeui` (如果有)。
+2. **删除目录**：`rm -rf /your/path/claudeui`。
+
+---
+**项目维护者**: Antigravity AI (基于 siteboon 原版深度定制)
