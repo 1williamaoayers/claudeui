@@ -92,6 +92,14 @@ interface ChatComposerProps {
   isTextareaExpanded: boolean;
   sendByCtrlEnter?: boolean;
   onTranscript: (text: string) => void;
+  claudeModel: string;
+  setClaudeModel: (model: string) => void;
+  cursorModel: string;
+  setCursorModel: (model: string) => void;
+  codexModel: string;
+  setCodexModel: (model: string) => void;
+  geminiModel: string;
+  setGeminiModel: (model: string) => void;
 }
 
 export default function ChatComposer({
@@ -149,6 +157,14 @@ export default function ChatComposer({
   isTextareaExpanded,
   sendByCtrlEnter,
   onTranscript,
+  claudeModel,
+  setClaudeModel,
+  cursorModel,
+  setCursorModel,
+  codexModel,
+  setCodexModel,
+  geminiModel,
+  setGeminiModel,
 }: ChatComposerProps) {
   const { t } = useTranslation('chat');
   const textareaRect = textareaRef.current?.getBoundingClientRect();
@@ -202,6 +218,14 @@ export default function ChatComposer({
           isUserScrolledUp={isUserScrolledUp}
           hasMessages={hasMessages}
           onScrollToBottom={onScrollToBottom}
+          claudeModel={claudeModel}
+          setClaudeModel={setClaudeModel}
+          cursorModel={cursorModel}
+          setCursorModel={setCursorModel}
+          codexModel={codexModel}
+          setCodexModel={setCodexModel}
+          geminiModel={geminiModel}
+          setGeminiModel={setGeminiModel}
         />}
       </div>
 
@@ -243,11 +267,10 @@ export default function ChatComposer({
             {filteredFiles.map((file, index) => (
               <div
                 key={file.path}
-                className={`cursor-pointer touch-manipulation border-b border-border/30 px-4 py-3 last:border-b-0 ${
-                  index === selectedFileIndex
+                className={`cursor-pointer touch-manipulation border-b border-border/30 px-4 py-3 last:border-b-0 ${index === selectedFileIndex
                     ? 'bg-primary/8 text-primary'
                     : 'text-foreground hover:bg-accent/50'
-                }`}
+                  }`}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
@@ -277,9 +300,8 @@ export default function ChatComposer({
 
         <div
           {...getRootProps()}
-          className={`relative overflow-hidden rounded-2xl border border-border/50 bg-card/80 shadow-sm backdrop-blur-sm transition-all duration-200 focus-within:border-primary/30 focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/15 ${
-            isTextareaExpanded ? 'chat-input-expanded' : ''
-          }`}
+          className={`relative overflow-hidden rounded-2xl border border-border/50 bg-card/80 shadow-sm backdrop-blur-sm transition-all duration-200 focus-within:border-primary/30 focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/15 ${isTextareaExpanded ? 'chat-input-expanded' : ''
+            }`}
         >
           <input {...getInputProps()} />
           <div ref={inputHighlightRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
@@ -345,9 +367,8 @@ export default function ChatComposer({
             </button>
 
             <div
-              className={`pointer-events-none absolute bottom-1 left-12 right-14 hidden text-xs text-muted-foreground/50 transition-opacity duration-200 sm:right-40 sm:block ${
-                input.trim() ? 'opacity-0' : 'opacity-100'
-              }`}
+              className={`pointer-events-none absolute bottom-1 left-12 right-14 hidden text-xs text-muted-foreground/50 transition-opacity duration-200 sm:right-40 sm:block ${input.trim() ? 'opacity-0' : 'opacity-100'
+                }`}
             >
               {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
             </div>

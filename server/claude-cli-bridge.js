@@ -29,6 +29,12 @@ async function queryClaudeCLI(command, options = {}, ws, user) {
 
         const workingDir = cwd || projectPath || process.cwd();
 
+        // [CUSTOM] Use the selected model if specified
+        if (model) {
+            console.log(`[DYNAMIC] Using model: ${model}`);
+            args.push('--model', model);
+        }
+
         console.log('Spawning Claude CLI:', 'claude', args.join(' '));
 
         // Set up environment inheriting everything

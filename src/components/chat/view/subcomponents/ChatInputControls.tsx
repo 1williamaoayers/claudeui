@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { PermissionMode, Provider } from '../../types/types';
 import ThinkingModeSelector from './ThinkingModeSelector';
 import TokenUsagePie from './TokenUsagePie';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS } from '../../../../../shared/modelConstants';
+import { ChevronDown } from 'lucide-react';
 
 interface ChatInputControlsProps {
   permissionMode: PermissionMode | string;
@@ -18,6 +20,14 @@ interface ChatInputControlsProps {
   isUserScrolledUp: boolean;
   hasMessages: boolean;
   onScrollToBottom: () => void;
+  claudeModel: string;
+  setClaudeModel: (model: string) => void;
+  cursorModel: string;
+  setCursorModel: (model: string) => void;
+  codexModel: string;
+  setCodexModel: (model: string) => void;
+  geminiModel: string;
+  setGeminiModel: (model: string) => void;
 }
 
 export default function ChatInputControls({
@@ -34,36 +44,66 @@ export default function ChatInputControls({
   isUserScrolledUp,
   hasMessages,
   onScrollToBottom,
+  claudeModel,
+  setClaudeModel,
+  cursorModel,
+  setCursorModel,
+  codexModel,
+  setCodexModel,
+  geminiModel,
+  setGeminiModel,
 }: ChatInputControlsProps) {
   const { t } = useTranslation('chat');
+
+  const getModelConfig = () => {
+    if (provider === 'claude') return CLAUDE_MODELS;
+    if (provider === 'codex') return CODEX_MODELS;
+    if (provider === 'gemini') return GEMINI_MODELS;
+    return CURSOR_MODELS;
+  };
+
+  const getModelValue = () => {
+    if (provider === 'claude') return claudeModel;
+    if (provider === 'codex') return codexModel;
+    if (provider === 'gemini') return geminiModel;
+    return cursorModel;
+  };
+
+  const handleModelChange = (value: string) => {
+    if (provider === 'claude') { setClaudeModel(value); localStorage.setItem('claude-model', value); }
+    else if (provider === 'codex') { setCodexModel(value); localStorage.setItem('codex-model', value); }
+    else if (provider === 'gemini') { setGeminiModel(value); localStorage.setItem('gemini-model', value); }
+    else { setCursorModel(value); localStorage.setItem('cursor-model', value); }
+  };
+
+  const modelConfig = getModelConfig();
+  const currentModel = getModelValue();
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
       <button
         type="button"
         onClick={onModeSwitch}
-        className={`rounded-lg border px-2.5 py-1 text-sm font-medium transition-all duration-200 sm:px-3 sm:py-1.5 ${
-          permissionMode === 'default'
+        className={`rounded-lg border px-2.5 py-1 text-sm font-medium transition-all duration-200 sm:px-3 sm:py-1.5 ${permissionMode === 'default'
             ? 'border-border/60 bg-muted/50 text-muted-foreground hover:bg-muted'
             : permissionMode === 'acceptEdits'
               ? 'border-green-300/60 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-600/40 dark:bg-green-900/15 dark:text-green-300 dark:hover:bg-green-900/25'
               : permissionMode === 'bypassPermissions'
                 ? 'border-orange-300/60 bg-orange-50 text-orange-700 hover:bg-orange-100 dark:border-orange-600/40 dark:bg-orange-900/15 dark:text-orange-300 dark:hover:bg-orange-900/25'
                 : 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'
-        }`}
+          }`}
         title={t('input.clickToChangeMode')}
       >
         <div className="flex items-center gap-1.5">
           <div
-            className={`h-1.5 w-1.5 rounded-full ${
-              permissionMode === 'default'
+            className={`h-1.5 w-1.5 rounded-full ${permissionMode === 'default'
                 ? 'bg-muted-foreground'
                 : permissionMode === 'acceptEdits'
                   ? 'bg-green-500'
                   : permissionMode === 'bypassPermissions'
                     ? 'bg-orange-500'
                     : 'bg-primary'
-            }`}
+              }`}
           />
           <span>
             {permissionMode === 'default' && t('codex.modes.default')}
@@ -74,8 +114,25 @@ export default function ChatInputControls({
         </div>
       </button>
 
+      {/* [CUSTOM] Add Model Selector */}
+      {provider && (
+        <div className="relative group/model">
+          <select
+            value={currentModel}
+            onChange={(e) => handleModelChange(e.target.value)}
+            className="cursor-pointer appearance-none rounded-lg border border-border/60 bg-muted/50 py-1 pl-2.5 pr-6 text-xs font-medium text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            title={t('providerSelection.selectModel')}
+          >
+            {modelConfig.OPTIONS.map(({ value, label }: { value: string; label: string }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground/60 transition-colors group-hover/model:text-muted-foreground" />
+        </div>
+      )}
+
       {provider === 'claude' && (
-        <ThinkingModeSelector selectedMode={thinkingMode} onModeChange={setThinkingMode} onClose={() => {}} className="" />
+        <ThinkingModeSelector selectedMode={thinkingMode} onModeChange={setThinkingMode} onClose={() => { }} className="" />
       )}
 
       <TokenUsagePie used={tokenBudget?.used || 0} total={tokenBudget?.total || parseInt(import.meta.env.VITE_CONTEXT_WINDOW) || 160000} />
