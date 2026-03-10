@@ -46,7 +46,7 @@ import mime from 'mime-types';
 
 import { getProjects, getSessions, getSessionMessages, renameProject, deleteSession, deleteProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache, searchConversations } from './projects.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getActiveClaudeSDKSessions, resolveToolApproval, getPendingApprovalsForSession, reconnectSessionWriter } from './claude-sdk.js';
-import { queryClaudeCLI, abortClaudeCLISession } from './claude-cli-bridge.js';
+import { queryClaudeCLI, abortClaudeCLISession, isClaudeCLISessionActive } from './claude-cli-bridge.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getActiveCursorSessions } from './cursor-cli.js';
 import { queryCodex, abortCodexSession, isCodexSessionActive, getActiveCodexSessions } from './openai-codex.js';
 import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getActiveGeminiSessions } from './gemini-cli.js';
@@ -1502,8 +1502,13 @@ function handleChatConnection(ws, user) {
                 } else if (provider === 'gemini') {
                     success = abortGeminiSession(data.sessionId);
                 } else {
-                    // Use Claude Agents SDK
-                    success = await abortClaudeSDKSession(data.sessionId);
+                    // Try to abort via CLI bridge first, then fallback to SDK
+                    const cliSuccess = abortClaudeCLISession(data.sessionId);
+                    if (cliSuccess) {
+                        success = true;
+                    } else {
+                        success = await abortClaudeSDKSession(data.sessionId);
+                    }
                 }
 
                 writer.send({
@@ -1546,12 +1551,18 @@ function handleChatConnection(ws, user) {
                 } else if (provider === 'gemini') {
                     isActive = isGeminiSessionActive(sessionId);
                 } else {
-                    // Use Claude Agents SDK
-                    isActive = isClaudeSDKSessionActive(sessionId);
-                    if (isActive) {
-                        // Reconnect the session's writer to the new WebSocket so
-                        // subsequent SDK output flows to the refreshed client.
-                        reconnectSessionWriter(sessionId, ws);
+                    // Try to check via CLI bridge first, then fallback to SDK
+                    const cliActive = isClaudeCLISessionActive(sessionId);
+                    if (cliActive) {
+                        isActive = true;
+                        // Reconnect the CLI session's writer (already handled by websocket state usually)
+                    } else {
+                        isActive = isClaudeSDKSessionActive(sessionId);
+                        if (isActive) {
+                            // Reconnect the session's writer to the new WebSocket so
+                            // subsequent SDK output flows to the refreshed client.
+                            reconnectSessionWriter(sessionId, ws);
+                        }
                     }
                 }
 

@@ -129,9 +129,15 @@ async function queryClaudeCLI(command, options = {}, ws, user) {
     });
 }
 
+function isClaudeCLISessionActive(sessionId) {
+    return activeClaudeProcesses.has(sessionId);
+}
+
 function abortClaudeCLISession(sessionId) {
+    if (!sessionId) return false;
     const process = activeClaudeProcesses.get(sessionId);
     if (process) {
+        console.log(`[INFO] Aborting CLI process for session: ${sessionId}`);
         process.kill('SIGTERM');
         activeClaudeProcesses.delete(sessionId);
         return true;
@@ -141,5 +147,6 @@ function abortClaudeCLISession(sessionId) {
 
 export {
     queryClaudeCLI,
-    abortClaudeCLISession
+    abortClaudeCLISession,
+    isClaudeCLISessionActive
 };
